@@ -15,16 +15,16 @@ load_dotenv()
 class VectorStore: 
 
     def __init__(self):
-        self._apiKey =  os.getenv("OPENAI_API_KEY")
+        self.apiKey = os.getenv("OPENAI_API_KEY")
         self._startVectorStore()
         self.path = 'backend/files/'
 
 
-        self.llm = ChatOpenAI(temperature=0.2, model="gpt-3.5-turbo", openai_api_key=self._apiKey)
+        self.llm = ChatOpenAI(temperature=0.2, model="gpt-3.5-turbo", openai_api_key=self.apiKey)
             
     def _startVectorStore(self):
         self.client = chromadb.PersistentClient(path="files/chroma")
-        embeddings = OpenAIEmbeddings(openai_api_key=self._apiKey)
+        embeddings = OpenAIEmbeddings(openai_api_key=self.apiKey)
         # Check if the collection already exists
         existing_collections = self.client.list_collections()
         collection_names = [collection.name for collection in existing_collections]
@@ -66,16 +66,17 @@ class VectorStore:
         return 
     
     def translate(self, qa_output: str, language: str):
-        print('Translating')
-        completion = openai.chat.completions.create(
-          model="gpt-3.5-turbo",
-          messages=[
-            {"role": "system", "content": "You are a helpful translator. Given an input text, translate it to the requested language. If there are any ambiguities, or things that couldn't be translated, please mention them after the translation.."},
-            {"role": "user", "content": f"translate this content {qa_output} to {language}"}
-          ]
+        print('Translating')  
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful translator. Given an input text, translate it to the requested language. If there are any ambiguities or things that couldn't be translated, please mention them after the translation."},
+                {"role": "user", "content": f"translate this content {qa_output} to {language}"}
+            ]
         )
-        print('Translating Response', completion.choices[0].message.content)
-        return completion.choices[0].message.content
+        translated_text = completion['choices'][0]['message']['content']
+        print('Translating Response', translated_text)
+        return translated_text
 
     def query(self, question: str, path: str, language: str):
         if path == "all":
@@ -86,18 +87,20 @@ class VectorStore:
         qa_chain = RetrievalQA.from_chain_type(
                 llm=self.llm,
                 chain_type="stuff", 
-                retriever=context_docs,
-                return_source_documents=True
+                retriever=context_docs
+                #return_source_documents=True
         )
-        # Make question and translate
-        qa_output = qa_chain({"query": question}) # qa_chain.run(question) without return_source_documents
-        print('Fetched from', qa_output['source_documents'])
-        #self.translate(qa_output['result'], language)
+        #qa_output = qa_chain({"query": question}) 
         
-        return qa_output # replace by translation when its working
+        # Make question and translate
+        print('Querying')  
+        qa_output = qa_chain.run(question)    
+        return self.translate(qa_output, language) 
         
 if __name__ == "__main__":   
     vec = VectorStore()
-    vec.add_file('gi.txt', 'txt', 'hi my old friend')
-    vec.remove_file('gi.txt')
-    vec.query('what does PDF mean', path='gi.txt') 
+    #vec.translate('My name is Pedro', 'pt')
+    #vec.add_file('gi.txt', 'txt', 'hi my old friend')
+    #vec.remove_file('gi.txt')
+    vec.query('what does PDF mean', path='all', language='en') 
+    vec.translate('My name is Pedro', 'pt')
