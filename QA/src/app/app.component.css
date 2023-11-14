@@ -1,0 +1,30 @@
+.center {
+  margin: auto;
+  width: 80%;
+  padding: 20px;
+  margin-top: 5%;
+}
+
+.message-container {
+  max-height: 35vh; /* Set the maximum height, adjust as needed */
+  overflow-y: auto; /* Enable vertical scrolling if necessary */
+  margin: auto;
+  border: black;
+  border-width: 2px;
+}
+
+.big-title {
+  text-align: center; /* Center the text horizontally */
+  color: black; /* Set the text color to black */
+  font-size: 36px; /* Set the font size to a large size */
+  font-weight: bold; /* Make the text bold */
+  padding-top: 50px; /* Add some space at the top */
+}
+
+.userId {
+  text-align: left;
+  font-size: 10px;
+}
+.tiny-box {
+  max-width: 30%;
+}

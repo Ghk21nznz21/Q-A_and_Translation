@@ -1,0 +1,3 @@
+Guardar varios Ficheiros
+User pode escolher ficheiro para perguntar (default Todos)
+Escolher Idioma Output 
